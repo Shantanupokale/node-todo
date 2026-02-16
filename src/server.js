@@ -2,6 +2,7 @@ import express, { json } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import todoRoutes from './routes/todo.routes.js';
+import { connectDB } from './config/db.js';
 
 dotenv.config();
 
@@ -17,7 +18,11 @@ app.get('/',(req,res) => {
     res.status(200).json({message: " backned is running "})
 })
 
-app.listen(PORT , () => {
-    console.log(`server on port ${PORT}`
-    )
-})
+const startServer = async () => {
+    await connectDB();
+    app.listen(PORT, () => {
+        console.log(`server on port ${PORT}`);
+    });
+};
+
+startServer();
