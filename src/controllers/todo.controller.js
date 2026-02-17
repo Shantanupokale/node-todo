@@ -30,11 +30,15 @@ export const updateTodo = async (req,res,next)=> {
     try {
         const { id } = req.params;
         const { title, description, status } = req.body;
-            if (!title || !description || !status) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'All fields are required'
-                });
+            if (
+                title === undefined ||
+                description === undefined ||
+                status === undefined
+            ) {
+              return res.status(400).json({
+              success: false,
+               message: "All fields are required"
+              });
             }
 
             if (!allowedStatus.includes(status)) {
