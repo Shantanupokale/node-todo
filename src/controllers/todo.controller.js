@@ -1,4 +1,4 @@
-import pool from "../config/db"
+import pool from "../config/db.js"
 
 const allowedStatus = ["in-progress", "on-hold", "complete"];
 
@@ -26,37 +26,45 @@ export const createTodo = async (req, res, next) => {
 };
 
 
-// export const updateTodo = async (req,res,next)=> {
-//     try {
-//         const { id } = req.params;
-//         const { title, description, status } = req.body;
-//             if (!title || !description || !status) {
-//                 return res.status(400).json({
-//                     success: false,
-//                     message: 'All fields are required'
-//                 });
-//             }
-//         const result = await pool.query(
-//             `UPDATE todos SET title = $1, description = $2, status = $3, updated_at = CURRENT_TIMESTAMP
-//              WHERE id = $4 RETURNING *`,
-//             [title, description, status, id]
-//         );
+export const updateTodo = async (req,res,next)=> {
+    try {
+        const { id } = req.params;
+        const { title, description, status } = req.body;
+            if (!title || !description || !status) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'All fields are required'
+                });
+            }
 
-//         if (result.rowCount === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Todo not found'
-//             });
-//         }
+            if (!allowedStatus.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid status value"
+            });
+        }
 
-//         res.status(200).json({
-//             success: true,
-//             data: result.rows[0]
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
+        const result = await pool.query(
+            `UPDATE todos SET title = $1, description = $2, status = $3, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $4 RETURNING *`,
+            [title.trim(), description, status, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Todo not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const deleteTodo = async (req, res, next) => {
     try {
