@@ -95,18 +95,47 @@ export const deleteTodo = async (req, res, next) => {
 };
 
 export const getTodos = async (req, res, next) => {
-    try {
-        const result = await pool.query(
-            `SELECT * FROM todos
-             ORDER BY created_at DESC`
-        );
-        res.status(200).json({
-            success: true,
-            data: result.rows
-        });
-    } catch (error) {
-        next(error);
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+
+    if (page < 1 || limit < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination values"
+      });
     }
+
+    const offset = (page - 1) * limit;
+
+    const todosResult = await pool.query(
+      `SELECT * FROM todos
+       ORDER BY created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    );
+
+    const countResult = await pool.query(
+      `SELECT COUNT(*) FROM todos`
+    );
+
+    const total = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      success: true,
+      data: todosResult.rows,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages
+      }
+    });
+
+  } catch (error) {
+    next(error);
+  }
 };
 
 
