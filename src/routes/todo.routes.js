@@ -6,7 +6,8 @@ import {
     getTodoById,
     updateTodo,
     deleteTodo,
-    toggleBookmark
+    toggleBookmark,
+    updateRating
 } from '../controllers/todo.controller.js';
 
 const router = express.Router();
@@ -17,6 +18,7 @@ router.get('/:id', auth, getTodoById);
 router.put('/:id', auth, updateTodo);
 router.delete('/:id', auth, deleteTodo);
 router.patch("/:id/bookmark", auth, toggleBookmark);
+router.patch("/:id/rating", auth, updateRating);
 
 // router.post('/', createTodo);
 // router.get('/', getTodos);

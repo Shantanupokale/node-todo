@@ -12,7 +12,7 @@ export const createTodo = async (req, res, next) => {
             });
         }
 
-        const result = await pool.query(
+         const result = await pool.query(
             `INSERT INTO todos (title, description , user_id , category_id) VALUES ($1, $2, $3 , $4) RETURNING *`,
             [title, description, req.user.userId , category_id || null ]
         );
@@ -92,6 +92,44 @@ export const deleteTodo = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+
+export const updateRating = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rating } = req.body;
+
+    const numericRating = parseFloat(rating);
+
+    if (isNaN(numericRating) || numericRating < 0 || numericRating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be between 0 and 5"
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE todos SET rating = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND user_id = $3
+       RETURNING *`,
+      [numericRating, id, req.user.userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Todo not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result.rows[0]
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getTodos = async (req, res, next) => {
